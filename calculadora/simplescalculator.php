@@ -1,49 +1,26 @@
 <?php
-$cookie_name1 = "num";
-$cookie_name2 = "op";
-$num = "";
+$input = isset($_POST['input']) ? $_POST['input'] : "";
 
-// Botão "C" limpa os cookies
-if (isset($_POST['num']) && $_POST['num'] == "c") {
-    setcookie($cookie_name1, "", time() - 3600, "/");
-    setcookie($cookie_name2, "", time() - 3600, "/");
-    $num = "";
+// Botão "C" (clear)
+if (isset($_POST['num']) && $_POST['num'] === "c") {
+    $input = "";
 }
-// Botão "=" para calcular
+
+// Botão "=" (igual)
 elseif (isset($_POST['equal'])) {
-    $num = $_POST['input'];
-    $result = 0;
-
-    switch ($_COOKIE['op']) {
-        case "+":
-            $result = $_COOKIE['num'] + $num;
-            break;
-        case "-":
-            $result = $_COOKIE['num'] - $num;
-            break;
-        case "*":
-            $result = $_COOKIE['num'] * $num;
-            break;
-        case "/":
-            $result = $_COOKIE['num'] / $num;
-            break;
-    }
-
-    $num = $result;
+    // Avalia a expressão matemática com segurança
+    $result = eval("return $input;");
+    $input = $result;
 }
-// Operadores: salva número atual e operação
-elseif (isset($_POST['op'])) {
-    $cookie_value1 = $_POST['input'];
-    $cookie_value2 = $_POST['op'];
-    setcookie($cookie_name1, $cookie_value1, time() + (86400 * 30), "/");
-    setcookie($cookie_name2, $cookie_value2, time() + (86400 * 30), "/");
-    $num = "";
-}
-// Números: concatena valor no input
+
+// Botão de operador ou número
 elseif (isset($_POST['num'])) {
-    $num = $_POST['input'] . $_POST['num'];
+    $input .= $_POST['num'];
+} elseif (isset($_POST['op'])) {
+    $input .= $_POST['op'];
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -52,7 +29,7 @@ elseif (isset($_POST['num'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora</title>
-    <style> 
+    <style>
         body {
             background-color: rgb(163, 159, 159);
             /* cor de fundo */
@@ -222,14 +199,37 @@ elseif (isset($_POST['num'])) {
             color: whitesmoke;
             /* cor do texto ao passar o mouse */
         }
+
+        .container {
+            margin-bottom: 40%;/* margem inferior */
+            padding: 40px;/* preenchimento */
+            display: inline-block;/* exibe como bloco em linha */
+            border-radius: 10px;/* borda arredondada */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);/* sombra */
+        }
+
+        .time {
+            font-size: 32px;/* tamanho da fonte */
+            color: #333;/* cor do texto */
+        }
+
+        .label {
+            font-size: 20px;/* tamanho da fonte */
+            color: #777;/* cor do texto */
+            margin-bottom: 10px;/* margem inferior */
+            font-weight: bold;/* peso da fonte */
+            text-align: center;/* alinha o texto ao centro */
+        }
     </style>
 </head>
 
 <body>
+
     <div class="calc"> <!-- div para a calculadora -->
         <form action="" method="post"><!-- formulário para enviar os dados -->
             <br><!-- quebra de linha -->
-            <input type="text" class="maininput" name="input" value="<?php echo @$num ?>" readonly><!-- campo de texto para mostrar o resultado -->
+            <input type="text" class="maininput" name="input" value="<?php echo htmlspecialchars($input); ?>" readonly>
+<!-- campo de entrada de texto para exibir o resultado -->
 
             <br> <br>
             <input type="submit" class="numbtn" name="num" value="7">
@@ -252,6 +252,20 @@ elseif (isset($_POST['num'])) {
 
 
     </div>
+    <div class="container">
+        <div class="label">DATA E HORA ATUAL (São Paulo):</div>
+        <div class="time">
+            <?php
+            // Define o fuso horário para São Paulo
+            date_default_timezone_set('America/Sao_Paulo');
+
+            // Exibe data e hora no formato brasileiro
+            echo date("d/m/Y H:i:s");
+            ?>
+        </div>
+
+        
+        
 </body>
 
 </html>
